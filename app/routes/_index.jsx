@@ -4,7 +4,7 @@ import {Suspense} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
 
 export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'Dev biz test | Home'}];
 };
 
 export async function loader({context}) {

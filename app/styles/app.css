@@ -471,3 +471,15 @@ aside li {
 .account-logout {
   display: inline-block;
 }
+.top-bar{
+  overflow: hidden;
+  padding:10px;
+  display: flex;
+  flex-direction: row;
+  max-width: 30%;
+}
+
+.top-bar small,
+.top-bar img{
+  margin-right:10px;
+}

@@ -17,6 +17,7 @@ import resetStyles from './styles/reset.css';
 import appStyles from './styles/app.css';
 import {Layout} from '~/components/Layout';
 import tailwindCss from './styles/tailwind.css';
+import CountryBar from "~/components/CountryBar";
 
 // This is important to avoid re-fetching root queries on sub-navigations
 export const shouldRevalidate = ({formMethod, currentUrl, nextUrl}) => {
@@ -54,6 +55,8 @@ export async function loader({context}) {
   const {storefront, session, cart} = context;
   const customerAccessToken = await session.get('customerAccessToken');
   const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
+  const layout = await context.storefront.query(LAYOUT_QUERY);
+  const country = await context.storefront.query(COUNTRY_QUERY);
 
   // validate the customer access token is valid
   const {isLoggedIn, headers} = await validateCustomerAccessToken(
@@ -87,6 +90,8 @@ export async function loader({context}) {
       header: await headerPromise,
       isLoggedIn,
       publicStoreDomain,
+      layout,
+      country
     },
     {headers},
   );
@@ -95,6 +100,10 @@ export async function loader({context}) {
 export default function App() {
   const nonce = useNonce();
   const data = useLoaderData();
+
+  const {name} = data.layout.shop;
+  const { localization } = data.country;
+  console.log(localization)
 
   return (
     <html lang="en">
@@ -106,6 +115,7 @@ export default function App() {
       </head>
       <body>
         <Layout {...data}>
+          <CountryBar nonce={nonce} countries={localization.availableCountries}/>
           <Outlet />
         </Layout>
         <ScrollRestoration nonce={nonce} />
@@ -149,6 +159,7 @@ export function ErrorBoundary() {
               </fieldset>
             )}
           </div>
+          <CountryBar nonce={nonce}/>
         </Layout>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
@@ -259,4 +270,24 @@ const FOOTER_QUERY = `#graphql
     }
   }
   ${MENU_FRAGMENT}
+`;
+
+const COUNTRY_QUERY = `#graphql
+  query country {
+    localization {
+      availableCountries {
+        isoCode 
+        name
+      }
+    }
+  }
+`
+
+const LAYOUT_QUERY = `#graphql
+  query layout {
+    shop {
+      name
+      description
+    }
+  }
 `;

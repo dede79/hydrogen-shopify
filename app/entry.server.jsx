@@ -4,26 +4,35 @@ import {renderToReadableStream} from 'react-dom/server';
 import {createContentSecurityPolicy} from '@shopify/hydrogen';
 
 export default async function handleRequest(
-  request,
-  responseStatusCode,
-  responseHeaders,
-  remixContext,
+    request,
+    responseStatusCode,
+    responseHeaders,
+    remixContext,
 ) {
-  const {nonce, header, NonceProvider} = createContentSecurityPolicy();
+  // Create the Content Security Policy
+  const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+    imgSrc: [
+      "'self'",
+      'https://cdn.shopify.com',
+      'flagcdn.com',
+    ],
+  });
 
   const body = await renderToReadableStream(
-    <NonceProvider>
-      <RemixServer context={remixContext} url={request.url} />
-    </NonceProvider>,
-    {
-      nonce,
-      signal: request.signal,
-      onError(error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
-        responseStatusCode = 500;
+      // Wrap the entire app in the nonce provider
+      <NonceProvider>
+        <RemixServer context={remixContext} url={request.url} />
+      </NonceProvider>,
+      {
+        // Pass the nonce to react
+        nonce,
+        signal: request.signal,
+        onError(error) {
+          // eslint-disable-next-line no-console
+          console.error(error);
+          responseStatusCode = 500;
+        },
       },
-    },
   );
 
   if (isbot(request.headers.get('user-agent'))) {
@@ -31,6 +40,7 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
+  // Add the CSP header
   responseHeaders.set('Content-Security-Policy', header);
 
   return new Response(body, {

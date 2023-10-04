@@ -4,7 +4,7 @@ import {Suspense} from 'react';
 export function Header({header, isLoggedIn, cart}) {
   const {shop, menu} = header;
   return (
-    <header className="header">
+    <header className="header bg-gray-200">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
       </NavLink>
@@ -50,7 +50,7 @@ export function HeaderMenu({menu, viewport}) {
             : item.url;
         return (
           <NavLink
-            className="header-menu-item"
+            className="header-menu-item "
             end
             key={item.id}
             onClick={closeAside}
